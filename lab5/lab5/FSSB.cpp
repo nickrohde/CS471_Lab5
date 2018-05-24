@@ -1,4 +1,4 @@
-#include "FSSB.h"
+#include "FSSB.hpp"
 
 using namespace std;
 

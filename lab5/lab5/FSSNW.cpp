@@ -1,4 +1,4 @@
-#include "FSSNW.h"
+#include "FSSNW.hpp"
 
 using namespace std;
 

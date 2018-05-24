@@ -1,8 +1,8 @@
 #include "MasterInclude.hpp"
 #include "FSS_Base.hpp"
-#include "FSS.h"
-#include "FSSB.h"
-#include "FSSNW.h"
+#include "FSS.hpp"
+#include "FSSB.hpp"
+#include "FSSNW.hpp"
 
 
 void JobMakespanFSS(cFSS_Base *FSS, std::string s_jobNum);
@@ -21,7 +21,11 @@ int main(int argc, char** argv)
 	} // end if
 	else
 	{
+#ifdef _WIN64 || _WIN32
 		fileName << "test\\" << std::string(argv[1]) << ".txt";
+#else
+		fileName << "test/" << std::string(argv[1]) << ".txt";
+#endif
 	} // end else
 
 	std::string s_file = fileName.str();
