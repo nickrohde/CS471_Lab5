@@ -1,15 +1,21 @@
-import subprocess
+import subprocess as proc
 import os
 
 
 var = "-1"
 
-if not os.path.isfile("main"):
-	subprocess.call(["make", "all"])
-if not os.path.isfile("main"):
-	print "Make failed! Terminating ..."
-	subprocess.call(["make", "clean"])
+if os.name() != 'posix':
+	print("Script only for POSIX systems. Exiting."
 	sys.exit()
+
+if not os.path.isfile("main"):
+	makeproc = proc.Popen(['make all'])
+	makeproc.wait()
+	exitCode = makeproc.returncode
+	if exitCode != 0:
+		print "Make failed! Exiting."
+		proc.call(["make", "clean"])
+		sys.exit()
 
 
 while var != "Q" and var != "q":
@@ -30,7 +36,7 @@ while var != "Q" and var != "q":
 		print "Starting run ...\n"
 
 		for i in range(1,121,1):
-			subprocess.call(["./main", str(i)])
+			proc.call(["./main", str(i)])
 
 	elif var == "2":
 		var = "-1"
@@ -44,10 +50,10 @@ while var != "Q" and var != "q":
 				var2 = -1
 
 		print "Starting run ...\n"		
-		subprocess.call(["./main", str(var2)])
+		proc.call(["./main", str(var2)])
 
 print "Cleaning up ...\n"    
 
-subprocess.call(["make", "clean"])
+proc.call(["make", "clean"])
 
 print "Finished."
