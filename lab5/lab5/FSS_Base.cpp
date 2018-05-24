@@ -114,13 +114,6 @@ std::vector<Job>* cFSS_Base::NEH(std::vector<Job>* jobs)
 	for (size_t i = 1; i < jobs->size(); i++)
 	{
 		insertJob(*schedule, (*jobs)[i]);
-
-		std::cout << (*schedule)[0].ui_index;
-		for (size_t j = 1; j < schedule->size(); j++)
-		{
-			std::cout << ", " << (*schedule)[j].ui_index;
-		}
-		std::cout << std::endl;
 	} // end for
 
 	delete jobs;

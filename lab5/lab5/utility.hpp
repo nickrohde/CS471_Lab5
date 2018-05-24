@@ -35,9 +35,7 @@
 
 #pragma region Typedefs:
 	/// <summary>Typedefs for convenience.</summary>
-	typedef unsigned char uchar;
 	typedef unsigned int uint;
-	typedef unsigned long long ulong;
 
 	typedef std::chrono::high_resolution_clock::time_point	timePoint;
 	typedef std::chrono::duration<double>					duration;
@@ -47,10 +45,10 @@
 
 
 #pragma region Templates:
-template <std::size_t> inline ulong __getDoubleMax(void) noexcept;
-template <> inline ulong __getDoubleMax<2>(void) noexcept { return 0x7BFF; }             // 16 bit just for completeness
-template <> inline ulong __getDoubleMax<4>(void) noexcept { return 0x7F7FFFFF; }		 // 32 bit
-template <> inline ulong __getDoubleMax<8>(void) noexcept { return 0x7FEFFFFFFFFFFFFF; } // 64 bit
+template <std::size_t> inline unsigned long long __getDoubleMax(void) noexcept;
+template <> inline unsigned long long __getDoubleMax<2>(void) noexcept { return 0x7BFF; }             // 16 bit just for completeness
+template <> inline unsigned long long __getDoubleMax<4>(void) noexcept { return 0x7F7FFFFF; }		 // 32 bit
+template <> inline unsigned long long __getDoubleMax<8>(void) noexcept { return 0x7FEFFFFFFFFFFFFF; } // 64 bit
 
 
 ///<summary>Sets the double to the maximum value for the system.</summary>
@@ -58,7 +56,7 @@ template <> inline ulong __getDoubleMax<8>(void) noexcept { return 0x7FEFFFFFFFF
 inline double getDoubleMax(void) noexcept
 {
 	static double a;
-	static ulong* b = reinterpret_cast<ulong*>(&a);
+	static unsigned long long* b = reinterpret_cast<unsigned long long*>(&a);
 	*b = (*b & 0x0) | __getDoubleMax<sizeof(double)>();
 	return a;
 } // end method getDoubleMax
