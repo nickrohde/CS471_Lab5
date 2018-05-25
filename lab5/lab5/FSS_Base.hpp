@@ -14,9 +14,9 @@ struct Job
 
 	Job(double a, std::size_t b) { d_time = a; ui_index = b; }
 
-	bool operator<(const Job& OTHER) const
+	bool operator>(const Job& OTHER) const
 	{
-		return d_time < OTHER.d_time;
+		return d_time > OTHER.d_time;
 	} // end operator <
 
 	
