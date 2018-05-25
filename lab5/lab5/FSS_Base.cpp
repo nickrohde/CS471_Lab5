@@ -2,7 +2,7 @@
 
 
 
-cFSS_Base::cFSS_Base(std::string s_fileName)
+cFSS_Base::cFSS_Base(const std::string s_fileName)
 {
 	std::ifstream infile(s_fileName.c_str(), std::ios::in);
 
@@ -10,54 +10,44 @@ cFSS_Base::cFSS_Base(std::string s_fileName)
 	{
 		std::cout << "Error Opening File.\n";
 		exit(EXIT_FAILURE);
-	}
+	} // end if
 	else
 	{
 		infile >> m_Machines;
 		infile >> m_Jobs;
 
 		instantiate();
-		Initialize();
+		initialize();
 
-		for (std::size_t i = 0; i < (m_Machines); i++)
-		{
-			for (std::size_t j = 0; j < m_Jobs; j++)
-			{
-				infile >> m_ProcessTime[i][j];
-			}
-		}
-	}
+		parse(infile);
+	} // end else
 
 	infile.close();
-}
+} // end Constructor
 
 
-cFSS_Base::~cFSS_Base(void)
+void cFSS_Base::parse(std::ifstream& file)
 {
-	for (std::size_t i = 0; i < m_Machines; i++)
+	for (std::size_t i = 0; i < (m_Machines); i++)
 	{
-		delete[] m_ProcessTime[i];
-	}
-	delete[] m_ProcessTime;
-
-	for (std::size_t i = 0; i < m_Machines; i++)
-	{
-		delete[] m_CompletionTime[i];
-	}
-	delete[] m_CompletionTime;
-}
+		for (std::size_t j = 0; j < m_Jobs; j++)
+		{
+			file >> m_ProcessTime[i][j];
+		} // end for j
+	} // end for i
+} // end method parse
 
 
-void cFSS_Base::Initialize(void)
+void cFSS_Base::initialize(void)
 {
 	for (std::size_t i = 0; i < m_Machines; i++)
 	{
 		for (std::size_t j = 0; j < m_Jobs; j++)
 		{
 			m_CompletionTime[i][j] = 0;
-		}
-	}
-}
+		} // end for j
+	} // end for i
+} // end method Initialize
 
 
 void cFSS_Base::instantiate(void)
@@ -67,23 +57,33 @@ void cFSS_Base::instantiate(void)
 	for (std::size_t i = 0; i < m_Machines; i++)
 	{
 		m_ProcessTime[i] = new double[m_Jobs];
-	}
+	} // end for 
 
 	m_CompletionTime = new double*[m_Machines];
 	for (std::size_t i = 0; i < m_Machines; i++)
 	{
 		m_CompletionTime[i] = new double[m_Jobs];
-	}
+	} // end for 
 } // end method instantiate
 
 
-std::vector<Job>* cFSS_Base::schedule(void)
+void cFSS_Base::release(void) noexcept
 {
-	return NEH(jobs());
-} // end method schedule
+	for (std::size_t i = 0; i < m_Machines; i++)
+	{
+		delete[] m_ProcessTime[i];
+	} // end for 
+	delete[] m_ProcessTime;
+
+	for (std::size_t i = 0; i < m_Machines; i++)
+	{
+		delete[] m_CompletionTime[i];
+	} // end for 
+	delete[] m_CompletionTime;
+} // end method Clear
 
 
-std::vector<Job>* cFSS_Base::jobs(void)
+std::vector<Job>* cFSS_Base::jobs(void) const
 {
 	auto jobs = new std::vector<Job>();
 
@@ -123,22 +123,22 @@ std::vector<Job>* cFSS_Base::NEH(std::vector<Job>* jobs)
 } // end method NEH
 
 
-void cFSS_Base::insertJob(std::vector<Job>& jobs, Job & job)
+void cFSS_Base::insertJob(std::vector<Job>& schedule, Job & job) 
 {
 	double	d_bestTime = getDoubleMax(),
 			d_tempTime = 0.0;
 	std::size_t ui_best = 0;
 
-	for (std::size_t i = 0; i <= jobs.size(); i++)
+	for (std::size_t i = 0; i <= schedule.size(); i++)
 	{
 		// try putting job into the ith spot
-		jobs.insert(jobs.begin() + i, job);
+		schedule.insert(schedule.begin() + i, job);
 
 		// calculate time for this permutation
-		d_tempTime = Makespan(jobs);
+		d_tempTime = Makespan(schedule);
 
 		// remove job for next loop
-		jobs.erase(jobs.begin() + i);
+		schedule.erase(schedule.begin() + i);
 
 		// check if this was a better place to put it
 		if (d_tempTime < d_bestTime)
@@ -148,6 +148,6 @@ void cFSS_Base::insertJob(std::vector<Job>& jobs, Job & job)
 		} // end if
 	} // end for
 
-	  // put job into the schedule at best location
-	jobs.insert(jobs.begin() + ui_best, job);
+	// put job into the schedule at best location
+	schedule.insert(schedule.begin() + ui_best, job);
 } // end method insertJob

@@ -5,12 +5,71 @@
 #include "FSSNW.hpp"
 
 
-void JobMakespanFSS(cFSS_Base *FSS, std::string s_jobNum);
-void JobMakespanFSSB(cFSS_Base *FSSB, std::string s_jobNum);
-void JobMakespanFSSNW(cFSS_Base *FSSNW, std::string s_jobNum);
-void printSchedule(std::vector<Job>* schedule);
+///<summary>Prints out the job schedule to std::out.</summary>
+///<param name="schedule">Schedule to print.</param>
+void printSchedule(std::vector<Job>* schedule)
+{
+	std::cout << "Schedule: " << (*schedule)[0].ui_index;
+	for (auto i = 1; i < schedule->size(); i++)
+	{
+		std::cout << ", " << ((*schedule)[i].ui_index + 1); // convert base0 -> base1
+	} // end for
+	std::cout << "\n";
+} // end method printSchedule
 
 
+///<summary>Solves the FSS on the given data set.</summary>
+///<param name="FSS">FSS object with data set initialised.</param>
+///<param name="s_jobNum">Number of the data set for output.</param>
+void JobMakespanFSS(cFSS_Base* FSS, const std::string& s_jobNum)
+{
+	auto schedule = FSS->schedule();
+
+    //! Calculate the makespan of the simple schedule and display it in standard output
+	std::cout << std::endl << "The makespan for test " << s_jobNum << " in flowshop is: " << FSS->Makespan(*schedule) << std::endl;
+	printSchedule(schedule);    
+
+    //! Delete the schdule.
+    delete schedule;
+} // end method JobMakespanFSS
+
+
+///<summary>Solves the FSSB on the given data set.</summary>
+///<param name="FSSB">FSSB object with data set initialised.</param>
+///<param name="s_jobNum">Number of the data set for output.</param>
+void JobMakespanFSSB(cFSS_Base* FSSB, const std::string& s_jobNum)
+{
+	auto schedule = FSSB->schedule();
+
+	//! Calculate the makespan of the simple schedule and display it in standard output
+	std::cout << std::endl << "The makespan for test " << s_jobNum << " in flowshop with blocking is: " << FSSB->Makespan(*schedule) << std::endl;
+	printSchedule(schedule);
+
+	//! Delete the schdule.
+	delete schedule;
+} // end method JobMakespanFSSB
+
+
+///<summary>Solves the FSSNW on the given data set.</summary>
+///<param name="FSSNW">FSSNW object with data set initialised.</param>
+///<param name="s_jobNum">Number of the data set for output.</param>
+void JobMakespanFSSNW(cFSS_Base* FSSNW, const std::string& s_jobNum)
+{
+	auto schedule = FSSNW->schedule();
+
+	//! Calculate the makespan of the simple schedule and display it in standard output
+	std::cout << std::endl << "The makespan for test " << s_jobNum << " in flowshop with no wait is: " << FSSNW->Makespan(*schedule) << std::endl;
+	printSchedule(schedule);
+
+	//! Delete the schdule.
+	delete schedule;
+} // end method JobMakespanFSSNW
+
+
+///<summary>Program entry point.</summary>
+///<param name="argc">Number of command line arguments.</param>
+///<param name="argv">Command line arguments.</param>
+///<returns>0 on successful execution, 1 otherwise.</returns>
 int main(int argc, char** argv)
 {
 	std::stringstream fileName;
@@ -22,31 +81,34 @@ int main(int argc, char** argv)
 	} // end if
 	else
 	{
-#ifdef _WIN64 || _WIN32
+// determine file system structure
+#if defined(_WIN64) || defined(_WIN32) // windows filesystem
 		fileName << "test\\" << std::string(argv[1]) << ".txt";
-#else
+#elif defined(__APPLE__) || defined(__linux) || defined(__unix) || defined(__posix) // unix-like filesystem
 		fileName << "test/" << std::string(argv[1]) << ".txt";
+#else // something else 
+		#error Unsupported filesystem!
 #endif
 	} // end else
 
 	std::string s_file = fileName.str();
 
-    //! Initialization of the FSS
-    cFSS_Base* FSS = new cFSS(s_file);
+	//! Initialization of the FSS
+	cFSS_Base* FSS = new cFSS(s_file);
 
-    //! Initialization of the FSS with blocking
+	//! Initialization of the FSS with blocking
 	cFSS_Base* FSSB = new cFSSB(s_file);
 
-    //! Initialization of the FSS with no wait
+	//! Initialization of the FSS with no wait
 	cFSS_Base* FSSNW = new cFSSNW(s_file);
-	
-    //! Calculate a schedule for flowshop
-    JobMakespanFSS(FSS, argv[1]);
 
-    //! Calculate a schedule for flowshop with blocking
+	//! Calculate a schedule for flowshop
+	JobMakespanFSS(FSS, argv[1]);
+
+	//! Calculate a schedule for flowshop with blocking
 	JobMakespanFSSB(FSSB, argv[1]);
 
-    //! Calculate a schedule for flowshop with no wait
+	//! Calculate a schedule for flowshop with no wait
 	JobMakespanFSSNW(FSSNW, argv[1]);
 
 	delete FSS;
@@ -55,53 +117,3 @@ int main(int argc, char** argv)
 
 	exit(EXIT_SUCCESS);
 } // end Main
-
-void JobMakespanFSS(cFSS_Base *FSS, std::string s_jobNum)
-{
-	auto schedule = FSS->schedule();
-
-    //! Calculate the makespan of the simple schedule and display it in standard output
-	std::cout << std::endl << "The makespan for test " << s_jobNum << " in flowshop is: " << FSS->Makespan(*schedule) << std::endl;
-	printSchedule(schedule);    
-
-    //! Delete the schdule.
-    delete schedule;
-}
-
-void JobMakespanFSSB(cFSS_Base *FSSB, std::string s_jobNum)
-{
-	auto schedule = FSSB->schedule();
-
-	//! Calculate the makespan of the simple schedule and display it in standard output
-	std::cout << std::endl << "The makespan for test " << s_jobNum << " in flowshop with blocking is: " << FSSB->Makespan(*schedule) << std::endl;
-	printSchedule(schedule);
-
-	//! Delete the schdule.
-	delete schedule;
-}
-
-void JobMakespanFSSNW(cFSS_Base *FSSNW, std::string s_jobNum)
-{
-	auto schedule = FSSNW->schedule();
-
-	//! Calculate the makespan of the simple schedule and display it in standard output
-	std::cout << std::endl << "The makespan for test " << s_jobNum << " in flowshop with no wait is: " << FSSNW->Makespan(*schedule) << std::endl;
-	printSchedule(schedule);
-
-	//! Delete the schdule.
-	delete schedule;
-}
-
-
-void printSchedule(std::vector<Job>* schedule)
-{
-	std::cout << "Schedule: " << (*schedule)[0].ui_index;
-	for(auto i = 1; i < schedule->size(); i++)
-	{
-		std::cout << ", " << ((*schedule)[i].ui_index + 1); // convert base0 -> base1
-	}
-	std::cout << "\n";
-}
-
-
-

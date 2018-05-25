@@ -10,10 +10,14 @@ public:
     /*!
      Pass-along Constructor.
      */
-	cFSS(std::string s_fileName) : cFSS_Base(s_fileName) { /* Pass-along Constructor. */ }
+	cFSS(const std::string s_fileName) : cFSS_Base(s_fileName) { /* Pass-along Constructor. */ }
 
-	double Makespan(std::vector<Job>& schedule);
 
-};
+	///<summary>Calculates the makespan of <paramref name="schedule"/> for FSS.</summary>
+	///<param name="schedule">Schedule to use for calculation.</param>
+	///<returns>The makespan of schedule <paramref name="schedule"/>.</returns>
+	double Makespan(const std::vector<Job>& schedule);
+
+}; // end Class cFSS
 
 #endif
