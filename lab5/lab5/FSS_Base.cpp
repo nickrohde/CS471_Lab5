@@ -108,6 +108,7 @@ std::vector<Job>* cFSS_Base::NEH(std::vector<Job>* jobs)
 	std::sort(jobs->begin(), jobs->end(), std::greater<Job>());
 
 	auto schedule = new std::vector<Job>();
+	schedule->reserve(jobs->size());
 
 	schedule->push_back((*jobs)[0]);
 

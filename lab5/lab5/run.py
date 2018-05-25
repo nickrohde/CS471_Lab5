@@ -1,59 +1,117 @@
 import subprocess as proc
 import os
+import sys
 
+false = False
+true = True
 
-var = "-1"
+stopAsking = False
 
-if os.name() != 'posix':
-	print("Script only for POSIX systems. Exiting."
-	sys.exit()
+def initialise():
+	if os.name != 'posix':
+		print"Script only for POSIX systems. Exiting."
+		return False
 
-if not os.path.isfile("main"):
-	makeproc = proc.Popen(['make all'])
-	makeproc.wait()
-	exitCode = makeproc.returncode
-	if exitCode != 0:
-		print "Make failed! Exiting."
-		proc.call(["make", "clean"])
-		sys.exit()
+	if not os.path.isfile("main"):
+		print "No executable found. Rebuilding ..."
+		code = callSub(['make', '-s', 'all'], "Make failed! Exiting.")
+		callSub(['make', '-s', 'removeObjects'], "")
+		if code:
+			print "Rebuild Successful! \n"
+		return code
+	
+	return True
 
-
-while var != "Q" and var != "q":
-	while var != "1" and var != "2" and var != "Q" and var != "q":
-		print "Pleas enter choice: "
-		print "1: Run all"
-		print "2: Run specific"
-		print "Q: Quit"
+def mainMenu():
+	var = ""
+	while var != "1" and var != "2" and var != "Q" and var != "q" and var != "QQ" and var != "Qq" and var != "qQ" and var != "qq" and var != "(Q_Q)":
+		print "\nPleas enter choice: "
+		print "   1: Run all"
+		print "   2: Run specific"
+		print "   Q: Quit"
+		print "  QQ: Quit and Clean"
 
 		try:
 			var = raw_input("Choice: ")
 		except:
-			print "Please enter 1, 2, or Q/q."
+			print "\nPlease enter 1 or 2 to run, or [Q | q] or [E | e] to quit."
+			var = "-1"
+	return var
+
+def checkContinue():
+	global stopAsking
+	c = ""
+	while c != "Y" and c != "y" and c != "N" and c != "n" and c != "kthx":
+		print "Continue? (Y/N)"
+		try:
+			c = raw_input("Choice: ")
+		except:
+			print "Please enter [Y | y] to continue, or [N | n] to quit."
+			c = ""
+
+	if c == "kthx":
+		stopAsking = True
+		return True
+	return (c == 'y' or c == 'Y')
+
+
+def callSub(args, errorMsg):
+	try:	
+		proc.check_call(args)
+		return True
+	except proc.CalledProcessError:
+		print errorMsg
+		proc.call(["make", '-s', "clean"])
+		return False
+
+def getNumber():
+	num = -1
+	while not (num >= 1 and num <= 120):
+		print "\nWhich problem? (1-120): "
+		try:
+			num = input("Choice: ")
+		except:
+			print "\nPlease enter an integer in the range [1,120]."
+			num = -1
+	return num
+
+def main():
+	global stopAsking
+	if not initialise():
+		return 1
+
+	var = "d"
+
+	while var != "Q" and var != "q":	
+		var = mainMenu()
+
+		if var == "1":
+			var = "-1"
+			print "Starting run ...\n"
+
+			for i in range(1,121,1):
+				if (((i % 10) == 0) or i >= 100) and stopAsking == False:
+					print "Stop asking is: ", stopAsking
+					if not checkContinue():
+						break	
+
+				if not callSub(["./main", str(i)], "\nRun failed! Exiting."):
+					return 1
+
+		elif var == "2":
 			var = "-1"
 
-	if var == "1":
-		var = "-1"
-		print "Starting run ...\n"
+			print "\nStarting run ...\n"
+			if not callSub(["./main", str(getNumber())], "\nRun failed! Exiting."):
+				return 1
+				
+		elif var == "QQ" or var == "Qq" or var == "qQ" or var == "qq" or var == "(Q_Q)":
+			print "\nCleaning up ...\n" 
+			callSub(["make", '-s', "clean"], "Clean failed!")  
+			break
 
-		for i in range(1,121,1):
-			proc.call(["./main", str(i)])
 
-	elif var == "2":
-		var = "-1"
-		var2 = -1
-		while not (var2 >= 1 and var2 <= 120):
-			print "Which problem? (1-120): "
-			try:
-				var2 = input("Choice: ")
-			except:
-				print "Please enter an integer in the range [1,120]."
-				var2 = -1
+	print "\nFinished."
 
-		print "Starting run ...\n"		
-		proc.call(["./main", str(var2)])
-
-print "Cleaning up ...\n"    
-
-proc.call(["make", "clean"])
-
-print "Finished."
+if __name__ == '__main__':
+	main()

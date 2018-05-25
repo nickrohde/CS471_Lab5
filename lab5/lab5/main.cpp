@@ -8,6 +8,7 @@
 void JobMakespanFSS(cFSS_Base *FSS, std::string s_jobNum);
 void JobMakespanFSSB(cFSS_Base *FSSB, std::string s_jobNum);
 void JobMakespanFSSNW(cFSS_Base *FSSNW, std::string s_jobNum);
+void printSchedule(std::vector<Job>* schedule);
 
 
 int main(int argc, char** argv)
@@ -60,8 +61,9 @@ void JobMakespanFSS(cFSS_Base *FSS, std::string s_jobNum)
 	auto schedule = FSS->schedule();
 
     //! Calculate the makespan of the simple schedule and display it in standard output
-	std::cout << "The makespan for job " << s_jobNum << " in flowshop is: " << FSS->Makespan(*schedule) << std::endl;
-    
+	std::cout << std::endl << "The makespan for test " << s_jobNum << " in flowshop is: " << FSS->Makespan(*schedule) << std::endl;
+	printSchedule(schedule);    
+
     //! Delete the schdule.
     delete schedule;
 }
@@ -71,7 +73,8 @@ void JobMakespanFSSB(cFSS_Base *FSSB, std::string s_jobNum)
 	auto schedule = FSSB->schedule();
 
 	//! Calculate the makespan of the simple schedule and display it in standard output
-	std::cout << "The makespan for job " << s_jobNum << " in flowshop with blocking is: " << FSSB->Makespan(*schedule) << std::endl;
+	std::cout << std::endl << "The makespan for test " << s_jobNum << " in flowshop with blocking is: " << FSSB->Makespan(*schedule) << std::endl;
+	printSchedule(schedule);
 
 	//! Delete the schdule.
 	delete schedule;
@@ -82,9 +85,23 @@ void JobMakespanFSSNW(cFSS_Base *FSSNW, std::string s_jobNum)
 	auto schedule = FSSNW->schedule();
 
 	//! Calculate the makespan of the simple schedule and display it in standard output
-	std::cout << "The makespan for job " << s_jobNum << " in flowshop with no wait is: " << FSSNW->Makespan(*schedule) << std::endl;
+	std::cout << std::endl << "The makespan for test " << s_jobNum << " in flowshop with no wait is: " << FSSNW->Makespan(*schedule) << std::endl;
+	printSchedule(schedule);
 
 	//! Delete the schdule.
 	delete schedule;
 }
+
+
+void printSchedule(std::vector<Job>* schedule)
+{
+	std::cout << "Schedule: " << (*schedule)[0].ui_index;
+	for(auto i = 1; i < schedule->size(); i++)
+	{
+		std::cout << ", " << ((*schedule)[i].ui_index + 1); // convert base0 -> base1
+	}
+	std::cout << "\n";
+}
+
+
 
