@@ -6,12 +6,12 @@ SRC_FSSNW=FSSNW.cpp
 
 MAIN=main
 BASE=base
-FSS=flowshopsched
-FSSB=flowshopblock
-FSSNW=flowshopnowait
+FSS=flowshop
+FSSB=block
+FSSNW=nowait
 
 CXX=g++
-FLAGS=-std=c++17
+FLAGS=-std=c++17 -pipe -O2 -msse3
 
 
 all: $(MAIN)

@@ -1,11 +1,7 @@
 import subprocess as proc
 import os
+import time
 import sys
-
-false = False
-true = True
-
-stopAsking = False
 
 def initialise():
 	if os.name != 'posix':
@@ -37,23 +33,6 @@ def mainMenu():
 			print "\nPlease enter 1 or 2 to run, or [Q | q] or [E | e] to quit."
 			var = "-1"
 	return var
-
-def checkContinue():
-	global stopAsking
-	c = ""
-	while c != "Y" and c != "y" and c != "N" and c != "n" and c != "kthx":
-		print "Continue? (Y/N)"
-		try:
-			c = raw_input("Choice: ")
-		except:
-			print "Please enter [Y | y] to continue, or [N | n] to quit."
-			c = ""
-
-	if c == "kthx":
-		stopAsking = True
-		return True
-	return (c == 'y' or c == 'Y')
-
 
 def callSub(args, errorMsg):
 	try:	
@@ -87,16 +66,17 @@ def main():
 
 		if var == "1":
 			var = "-1"
-			print "Starting run ...\n"
+			print "Starting run ..."
+			print "To stop early, use CTRL+C\n"
+			time.sleep(2)
 
 			for i in range(1,121,1):
-				if (((i % 10) == 0) or i >= 100) and stopAsking == False:
-					print "Stop asking is: ", stopAsking
-					if not checkContinue():
-						break	
-
-				if not callSub(["./main", str(i)], "\nRun failed! Exiting."):
-					return 1
+				try:
+					if not callSub(["./main", str(i)], "\nRun failed! Exiting."):
+						return 1
+				except KeyboardInterrupt:
+					print "\nStopped!"
+					break
 
 		elif var == "2":
 			var = "-1"
