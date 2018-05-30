@@ -6,30 +6,20 @@ SRC_FSSNW=FSSNW.cpp
 
 MAIN=main
 BASE=base
-FSS=flowshop
-FSSB=block
-FSSNW=nowait
+CLASSES=classes
 
 CXX=g++
-FLAGS=-std=c++17 -pipe -O2 -msse3
+FLAGS=-std=c++17 -pipe -Ofast -msse4 -ffast-math -ffinite-math-only
 
 
 all: $(MAIN)
 
-$(MAIN): $(FSS) $(FSSB) $(FSSNW)
+$(MAIN): $(CLASSES)
 	$(CXX) $(SRC_MAIN) $(FLAGS) -o $(MAIN) *.o
 
-$(FSS): $(BASE)
-	$(CXX) -c $(SRC_FSS) $(FLAGS)
+$(CLASSES):
+	$(CXX) -c $(SRC_BASE) $(SRC_FSS) $(SRC_FSSB) $(SRC_FSSNW) $(FLAGS)
 
-$(FSSB): $(BASE)
-	$(CXX) -c $(SRC_FSSB) $(FLAGS)
-
-$(FSSNW): $(BASE)
-	$(CXX) -c $(SRC_FSSNW) $(FLAGS)
-
-$(BASE):
-	$(CXX) -c $(SRC_BASE) $(FLAGS)
 	
 removeObjects:
 	rm -f *.o *.h.gch *.hpp.gch

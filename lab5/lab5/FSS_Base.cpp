@@ -112,6 +112,8 @@ std::vector<Job>* cFSS_Base::NEH(std::vector<Job>* jobs)
 
 	schedule->push_back((*jobs)[0]);
 
+	ui_numberCalls = 0;
+
 	for (size_t i = 1; i < jobs->size(); i++)
 	{
 		insertJob(*schedule, (*jobs)[i]);
@@ -136,6 +138,7 @@ void cFSS_Base::insertJob(std::vector<Job>& schedule, Job & job)
 
 		// calculate time for this permutation
 		d_tempTime = Makespan(schedule);
+		ui_numberCalls++;
 
 		// remove job for next loop
 		schedule.erase(schedule.begin() + i);

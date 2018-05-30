@@ -39,7 +39,7 @@ void JobMakespanFSS(cFSS_Base* FSS, const std::string& s_jobNum)
 	
 	if(file.is_open() && !file.bad())
 	{
-		file << time_to_compute.count();
+		file << result << ", " << time_to_compute.count() << ", " << FSS->callsMade();
 	} // end if
 
 	file.close();
@@ -72,7 +72,7 @@ void JobMakespanFSSB(cFSS_Base* FSSB, const std::string& s_jobNum)
 	
 	if(file.is_open() && !file.bad())
 	{
-		file << ", " << time_to_compute.count();
+		file << ", " << result << ", " << time_to_compute.count() << ", " << FSSB->callsMade();
 	} // end if
 
 	file.close();
@@ -105,7 +105,7 @@ void JobMakespanFSSNW(cFSS_Base* FSSNW, const std::string& s_jobNum)
 
 	if(file.is_open() && !file.bad())
 	{
-		file << ", " << time_to_compute.count() << std::endl;
+		file << ", " << result << ", " << time_to_compute.count() << ", " << FSSNW->callsMade() << std::endl;
 	} // end if
 
 	file.close();

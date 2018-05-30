@@ -56,6 +56,13 @@ class cFSS_Base
 			virtual double Makespan(const std::vector<Job>& schedule) = 0;
 
 		#pragma endregion
+		
+		#pragma region Accessors:
+			///<summary>Accessor for the number of calls made to Makespan.</summary>
+			///<returns>The total number of calls made to Makespan since NEH started.</returns>
+			inline std::size_t callsMade(void) { return ui_numberCalls; }
+		
+		#pragma endregion
 
 	#pragma endregion
 
@@ -73,6 +80,10 @@ class cFSS_Base
 			std::size_t m_Jobs;
 			//! The number of machines.
 			std::size_t m_Machines;
+
+			//! Stores # of makespan calls for results
+			std::size_t ui_numberCalls;
+
 		#pragma endregion
 
 		#pragma region Operations:
@@ -85,7 +96,6 @@ class cFSS_Base
 
 	#pragma region Private:
 	private:
-
 		#pragma region Memory Management:
 			///<summary>Instantiates dynamic memory of this class.</summary>
 			void instantiate(void);
