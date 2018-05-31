@@ -5,7 +5,11 @@
 #include "FSSB.hpp"
 #include "FSSNW.hpp"
 
-const std::string FILE_NAME = "results.csv";
+std::string FILE_NAME = "results.csv";
+
+// thread synchronization for writing results to file
+std::mutex threadLock;
+int turn = 0;
 
 ///<summary>Prints out the job schedule to std::out.</summary>
 ///<param name="schedule">Schedule to print.</param>
@@ -23,7 +27,7 @@ void printSchedule(std::vector<Job>* schedule)
 ///<summary>Solves the FSS on the given data set.</summary>
 ///<param name="FSS">FSS object with data set initialised.</param>
 ///<param name="s_jobNum">Number of the data set for output.</param>
-void JobMakespanFSS(cFSS_Base* FSS, const std::string& s_jobNum)
+void JobMakespanFSS(cFSS_Base* FSS, const std::string& s_jobNum, const std::string& s_print, const std::string& s_store)
 {
 	timePoint compute_end = highRes_Clock::now(),
 			  compute_start = highRes_Clock::now();
@@ -35,18 +39,27 @@ void JobMakespanFSS(cFSS_Base* FSS, const std::string& s_jobNum)
 	auto result = FSS->Makespan(*schedule);
 	duration time_to_compute = std::chrono::duration_cast<duration>(compute_end - compute_start);
 
-	std::ofstream file(FILE_NAME, std::ios::out | std::ios::app);
-	
-	if(file.is_open() && !file.bad())
+	if(s_store == "1")
 	{
-		file << result << ", " << time_to_compute.count() << ", " << FSS->callsMade();
-	} // end if
+		std::ofstream file(FILE_NAME, std::ios::out | std::ios::app);
+		
+		if(file.is_open() && !file.bad())
+		{
+			file << result << ", " << time_to_compute.count() << ", " << FSS->callsMade();
+		} // end if
 
-	file.close();
+		file.close();
+
+		threadLock.lock();
+		turn = 1;
+		threadLock.unlock();
+	} // end if
 
     //! Calculate the makespan of the simple schedule and display it in standard output
 	std::cout << std::endl << "The makespan for test-set " << s_jobNum << " in flowshop is: " << result << ". Time: " << time_to_compute.count() << " (s)" << std::endl;
-	printSchedule(schedule);    
+
+	if(s_print == "1")
+		printSchedule(schedule);    
 
     //! Delete the schdule.
     delete schedule;
@@ -56,7 +69,7 @@ void JobMakespanFSS(cFSS_Base* FSS, const std::string& s_jobNum)
 ///<summary>Solves the FSSB on the given data set.</summary>
 ///<param name="FSSB">FSSB object with data set initialised.</param>
 ///<param name="s_jobNum">Number of the data set for output.</param>
-void JobMakespanFSSB(cFSS_Base* FSSB, const std::string& s_jobNum)
+void JobMakespanFSSB(cFSS_Base* FSSB, const std::string& s_jobNum, const std::string& s_print, const std::string& s_store)
 {
 	timePoint compute_end = highRes_Clock::now(),
 			  compute_start = highRes_Clock::now();
@@ -68,18 +81,39 @@ void JobMakespanFSSB(cFSS_Base* FSSB, const std::string& s_jobNum)
 	auto result = FSSB->Makespan(*schedule);
 	duration time_to_compute = std::chrono::duration_cast<duration>(compute_end - compute_start);
 
-	std::ofstream file(FILE_NAME, std::ios::out | std::ios::app);
-	
-	if(file.is_open() && !file.bad())
+	if(s_store == "1")
 	{
-		file << ", " << result << ", " << time_to_compute.count() << ", " << FSSB->callsMade();
-	} // end if
+		while(true)
+		{
+			threadLock.lock();
+			if(turn == 1)
+			{
+				threadLock.unlock();
+				break;
+			} // end if
+			else
+				threadLock.unlock();
+		} // end while
 
-	file.close();
+		std::ofstream file(FILE_NAME, std::ios::out | std::ios::app);
+		
+		if(file.is_open() && !file.bad())
+		{
+			file << ", " << result << ", " << time_to_compute.count() << ", " << FSSB->callsMade();
+		} // end if
+
+		file.close();
+
+		threadLock.lock();
+		turn = 2;
+		threadLock.unlock();
+	} // end if
 
 	//! Calculate the makespan of the simple schedule and display it in standard output
 	std::cout << std::endl << "The makespan for test-set " << s_jobNum << " in flowshop with blocking is: " << result << ". Time: " << time_to_compute.count() << " (s)" << std::endl;
-	printSchedule(schedule);
+
+	if(s_print == "1")
+		printSchedule(schedule);
 
 	//! Delete the schdule.
 	delete schedule;
@@ -89,7 +123,7 @@ void JobMakespanFSSB(cFSS_Base* FSSB, const std::string& s_jobNum)
 ///<summary>Solves the FSSNW on the given data set.</summary>
 ///<param name="FSSNW">FSSNW object with data set initialised.</param>
 ///<param name="s_jobNum">Number of the data set for output.</param>
-void JobMakespanFSSNW(cFSS_Base* FSSNW, const std::string& s_jobNum)
+void JobMakespanFSSNW(cFSS_Base* FSSNW, const std::string& s_jobNum, const std::string& s_print, const std::string& s_store)
 {
 	timePoint compute_end = highRes_Clock::now(),
 			  compute_start = highRes_Clock::now();
@@ -101,18 +135,35 @@ void JobMakespanFSSNW(cFSS_Base* FSSNW, const std::string& s_jobNum)
 	auto result = FSSNW->Makespan(*schedule);
 	duration time_to_compute = std::chrono::duration_cast<duration>(compute_end - compute_start);
 
-	std::ofstream file(FILE_NAME, std::ios::out | std::ios::app);
-
-	if(file.is_open() && !file.bad())
+	if(s_store == "1")
 	{
-		file << ", " << result << ", " << time_to_compute.count() << ", " << FSSNW->callsMade() << std::endl;
-	} // end if
+		while(true)
+		{
+			threadLock.lock();
+			if(turn == 2)
+			{
+				threadLock.unlock();
+				break;
+			} // end if
+			else
+				threadLock.unlock();
+		} // end while
 
-	file.close();
+		std::ofstream file(FILE_NAME, std::ios::out | std::ios::app);
+
+		if(file.is_open() && !file.bad())
+		{
+			file << ", " << result << ", " << time_to_compute.count() << ", " << FSSNW->callsMade() << std::endl;
+		} // end if
+
+		file.close();
+	} // end if
 
 	//! Calculate the makespan of the simple schedule and display it in standard output
 	std::cout << std::endl << "The makespan for test-set " << s_jobNum << " in flowshop with no wait is: " << result << ". Time: " << time_to_compute.count() << " (s)" << std::endl;
-	printSchedule(schedule);
+
+	if(s_print == "1")
+		printSchedule(schedule);
 
 	//! Delete the schdule.
 	delete schedule;
@@ -126,22 +177,32 @@ void JobMakespanFSSNW(cFSS_Base* FSSNW, const std::string& s_jobNum)
 int main(int argc, char** argv)
 {
 	std::stringstream fileName;
+	std::string s_threads = "0";
 
-	if (argc < 2)
+	if (argc < 5 || (argc < 6 && argv[4] == "1"))
 	{
-		std::cout << "No parameters received" << std::endl;
+		std::cout << "Too few parameters received!" << std::endl;
+		std::cout << "Usage: " << argv[0] << "[Problem set # (1-120)] [Use Threads (0 | 1)] [Print Schedule (0 | 1)] [Store Results (0 | 1)] [Output File Name]" << std::endl;
 		exit(EXIT_FAILURE);
 	} // end if
 	else
 	{
-// determine file system structure
-#if defined(_WIN64) || defined(_WIN32) // windows filesystem
-		fileName << "test\\" << std::string(argv[1]) << ".txt";
-#elif defined(__APPLE__) || defined(__linux) || defined(__unix) || defined(__posix) // unix-like filesystem
-		fileName << "test/" << std::string(argv[1]) << ".txt";
-#else // something else 
-		#error Unsupported filesystem!
-#endif
+		// determine file system structure
+		#if defined(_WIN64) || defined(_WIN32) // windows filesystem
+			fileName << "test\\" << std::string(argv[1]) << ".txt";
+		#elif defined(__APPLE__) || defined(__linux) || defined(__unix) || defined(__posix) // unix-like filesystem
+			fileName << "test/" << std::string(argv[1]) << ".txt";
+		#else // something else 
+			#error Unsupported filesystem!
+		#endif
+
+		std::string tempStore = argv[4];
+		s_threads = argv[2];
+
+		if(tempStore == "1")
+		{
+			FILE_NAME = std::string(argv[5]);
+		} // end if
 	} // end else
 
 	std::string s_file = fileName.str();
@@ -155,14 +216,31 @@ int main(int argc, char** argv)
 	//! Initialization of the FSS with no wait
 	cFSS_Base* FSSNW = new cFSSNW(s_file);
 
-	//! Calculate a schedule for flowshop
-	JobMakespanFSS(FSS, argv[1]);
+	if(s_threads == "1")
+	{
+		auto threads = std::vector<std::thread>(3);
 
-	//! Calculate a schedule for flowshop with blocking
-	JobMakespanFSSB(FSSB, argv[1]);
+		//! Calculate a schedule for flowshop
+		threads[0] = std::thread(JobMakespanFSS, FSS, argv[1], argv[3], argv[4]);
 
-	//! Calculate a schedule for flowshop with no wait
-	JobMakespanFSSNW(FSSNW, argv[1]);
+		//! Calculate a schedule for flowshop with blocking
+		threads[1] = std::thread(JobMakespanFSSB, FSSB, argv[1], argv[3], argv[4]);
+
+		//! Calculate a schedule for flowshop with no wait
+		threads[2] = std::thread(JobMakespanFSSNW, FSSNW, argv[1], argv[3], argv[4]);
+
+		// wait for all to finish
+		for(auto i = 0; i < threads.size(); i++)
+		{
+			threads[i].join();
+		} // end for
+	} // end if
+	else
+	{
+		JobMakespanFSS(FSS, argv[1], argv[3], argv[4]);
+		JobMakespanFSSB(FSSB, argv[1], argv[3], argv[4]);
+		JobMakespanFSSNW(FSSNW, argv[1], argv[3], argv[4]);
+	} // end else
 
 	delete FSS;
 	delete FSSB;
