@@ -25,21 +25,33 @@ def initialise():
 	if 'Test' in config:
 		if 'print' in config['Test']:
 			printResults = config['Test']['print']
+			if printResults != '1' and printResults != '0':
+				print "Invalid value for key 'print', using default (0)"
+				printResults = '0'
 		else:
 			print "\nRequired configuration key 'print' missing! Exiting ..."
 			return False
 		if 'use_threads' in config['Test']:
 			useThreads = config['Test']['use_threads']
+			if useThreads != '1' and useThreads != '0':
+				print "Invalid value for key 'useThreads', using default (0)"
+				useThreads = '0'
 		else:
 			print "\nRequired configuration key 'use_threads' missing! Exiting ..."
 			return False
 
 		if 'store' in config['Test']:
 			storeResults = config['Test']['store']
+			if storeResults != '1' and storeResults != '0':
+				print "Invalid value for key 'storeResults', using default (0)"
+				storeResults = '0'
 			
 			if storeResults == '1':
 				if 'results_file_name' in config['Test']:
 					fileName = config['Test']['results_file_name']
+					if fileName == '':
+						print "Invalid value for key 'results_file_name', using default (results.csv)"
+						fileName = 'results.csv'
 				else:
 					print "\nRequired configuration key 'results_file_name' missing! Exiting ..."
 					return False

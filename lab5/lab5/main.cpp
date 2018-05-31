@@ -5,10 +5,13 @@
 #include "FSSB.hpp"
 #include "FSSNW.hpp"
 
+//! dedfault file name for output
 std::string FILE_NAME = "results.csv";
 
-// thread synchronization for writing results to file
+//! thread synchronization for writing results to file
 std::mutex threadLock;
+
+//! thread synchronization for writing results to file in order
 int turn = 0;
 
 ///<summary>Prints out the job schedule to std::out.</summary>
@@ -32,13 +35,16 @@ void JobMakespanFSS(cFSS_Base* FSS, const std::string& s_jobNum, const std::stri
 	timePoint compute_end = highRes_Clock::now(),
 			  compute_start = highRes_Clock::now();
 
+	//! Find schedule
 	auto schedule = FSS->schedule();
 
 	compute_end = highRes_Clock::now();
 
+	//! Find makespan of schedule
 	auto result = FSS->Makespan(*schedule);
 	duration time_to_compute = std::chrono::duration_cast<duration>(compute_end - compute_start);
 
+	//! Store results 
 	if(s_store == "1")
 	{
 		std::ofstream file(FILE_NAME, std::ios::out | std::ios::app);
@@ -55,9 +61,10 @@ void JobMakespanFSS(cFSS_Base* FSS, const std::string& s_jobNum, const std::stri
 		threadLock.unlock();
 	} // end if
 
-    //! Calculate the makespan of the simple schedule and display it in standard output
+    //! Display result in standard output
 	std::cout << std::endl << "The makespan for test-set " << s_jobNum << " in flowshop is: " << result << ". Time: " << time_to_compute.count() << " (s)" << std::endl;
 
+	//! Print schedule if user requested it
 	if(s_print == "1")
 		printSchedule(schedule);    
 
@@ -83,6 +90,7 @@ void JobMakespanFSSB(cFSS_Base* FSSB, const std::string& s_jobNum, const std::st
 
 	if(s_store == "1")
 	{
+		//! wait for previous thread to finish writing results
 		while(true)
 		{
 			threadLock.lock();
@@ -109,9 +117,10 @@ void JobMakespanFSSB(cFSS_Base* FSSB, const std::string& s_jobNum, const std::st
 		threadLock.unlock();
 	} // end if
 
-	//! Calculate the makespan of the simple schedule and display it in standard output
+    //! Display result in standard output
 	std::cout << std::endl << "The makespan for test-set " << s_jobNum << " in flowshop with blocking is: " << result << ". Time: " << time_to_compute.count() << " (s)" << std::endl;
 
+	//! Print schedule if user requested it
 	if(s_print == "1")
 		printSchedule(schedule);
 
@@ -137,6 +146,7 @@ void JobMakespanFSSNW(cFSS_Base* FSSNW, const std::string& s_jobNum, const std::
 
 	if(s_store == "1")
 	{
+		//! wait for previous thread to finish writing results
 		while(true)
 		{
 			threadLock.lock();
@@ -159,9 +169,10 @@ void JobMakespanFSSNW(cFSS_Base* FSSNW, const std::string& s_jobNum, const std::
 		file.close();
 	} // end if
 
-	//! Calculate the makespan of the simple schedule and display it in standard output
+    //! Display result in standard output
 	std::cout << std::endl << "The makespan for test-set " << s_jobNum << " in flowshop with no wait is: " << result << ". Time: " << time_to_compute.count() << " (s)" << std::endl;
 
+	//! Print schedule if user requested it
 	if(s_print == "1")
 		printSchedule(schedule);
 
@@ -172,7 +183,7 @@ void JobMakespanFSSNW(cFSS_Base* FSSNW, const std::string& s_jobNum, const std::
 
 ///<summary>Program entry point.</summary>
 ///<param name="argc">Number of command line arguments.</param>
-///<param name="argv">Command line arguments.</param>
+///<param name="argv">Command line arguments. [0]: executable; [1]: test-set #; [2]: Use Threads (1/0); [3]: Print Schedule (1/0); [4]: Store Results; [5] Filename iff [4] == 1.</param>
 ///<returns>0 on successful execution, 1 otherwise.</returns>
 int main(int argc, char** argv)
 {
@@ -205,6 +216,7 @@ int main(int argc, char** argv)
 		} // end if
 	} // end else
 
+	//! create filename
 	std::string s_file = fileName.str();
 
 	//! Initialization of the FSS
@@ -216,8 +228,10 @@ int main(int argc, char** argv)
 	//! Initialization of the FSS with no wait
 	cFSS_Base* FSSNW = new cFSSNW(s_file);
 
+	//! check if multiple threads should be used
 	if(s_threads == "1")
 	{
+		//! initialize threads
 		auto threads = std::vector<std::thread>(3);
 
 		//! Calculate a schedule for flowshop
@@ -229,7 +243,7 @@ int main(int argc, char** argv)
 		//! Calculate a schedule for flowshop with no wait
 		threads[2] = std::thread(JobMakespanFSSNW, FSSNW, argv[1], argv[3], argv[4]);
 
-		// wait for all to finish
+		//! wait for all threads to finish
 		for(auto i = 0; i < threads.size(); i++)
 		{
 			threads[i].join();
@@ -237,11 +251,13 @@ int main(int argc, char** argv)
 	} // end if
 	else
 	{
+		//! do scheduling sequentially
 		JobMakespanFSS(FSS, argv[1], argv[3], argv[4]);
 		JobMakespanFSSB(FSSB, argv[1], argv[3], argv[4]);
 		JobMakespanFSSNW(FSSNW, argv[1], argv[3], argv[4]);
 	} // end else
 
+	//! free memory
 	delete FSS;
 	delete FSSB;
 	delete FSSNW;
